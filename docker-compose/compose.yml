@@ -1,3 +1,4 @@
+---
 #https://docs.docker.com/compose/compose-file/#illustrative-example
 services:
   frontend:
@@ -37,3 +38,60 @@ networks:
   # The presence of these objects is sufficient to define them
   front-tier: {}
   back-tier: {}
+
+# example Volume-1
+# services:
+#   frontend:
+#     image: node:lts
+#     volumes:
+#       - myapp:/home/node/app
+# volumes:
+#   myapp:
+
+# example Volume-2, mayapp previously created outside of this compose file
+# services:
+#   frontend:
+#     image: node:lts
+#     volumes:
+#       - myapp:/home/node/app
+# volumes:
+#   myapp:
+#     external: true
+
+# example Volume-3, named vol mentioned under volumes
+# version: "3.9"
+# services:
+#   web:
+#     image: nginx:alpine
+#     volumes:
+#       - type: volume
+#         source: mydata
+#         target: /data
+#         volume:
+#           nocopy: true
+#       - type: bind
+#         source: ./static
+#         target: /opt/app/static
+
+#   db:
+#     image: postgres:latest
+#     volumes:
+#       - "/var/run/postgres/postgres.sock:/var/run/postgres/postgres.sock"
+#       - "dbdata:/var/lib/postgresql/data"
+
+# volumes:
+#   mydata:
+#   dbdata:
+
+# https://docs.docker.com/compose/compose-file/#labels
+# labels to add metadata to container, reverse DNS format is prefered
+# labels:
+#   com.example.description: "Accounting webapp"
+#   com.example.department: "Finance"
+#   com.example.label-with-empty-value: ""
+
+#OR
+# labels:
+#   - "com.example.description=Accounting webapp"
+#   - "com.example.department=Finance"
+#   - "com.example.label-with-empty-value"

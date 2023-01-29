@@ -1,0 +1,28 @@
+#version: "3.9"
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins-server1
+    privileged: true
+    hostname: jenkinsserver1
+    user: root
+    labels:
+      com.yxar.description: "Jenkins-Server1"
+      com.yxar.label-with-empty-value: ""
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    networks:
+      jenkins-net1:
+        aliases:
+          - jenkins-net1
+    volumes:
+     - jenkins-cfg1:/var/jenkins_home
+     - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  jenkins-cfg1:
+
+networks:
+  jenkins-net1:
