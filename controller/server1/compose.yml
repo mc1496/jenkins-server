@@ -3,6 +3,8 @@
 services:
   jenkins:
     image: jenkins/jenkins:lts
+    # without specifying the container name
+    # we will get server1-jenkins-1 in docker container ls and docker ps
     container_name: jenkins-server1
     privileged: true
     hostname: jenkinsserver1
@@ -21,8 +23,14 @@ services:
      - jenkins-cfg1:/var/jenkins_home
      - /var/run/docker.sock:/var/run/docker.sock
 
+# foldername_ of this compose-file prepend to volume and network
+# which can create some unnecessary trouble if we try to automate cleanup,...
+# especially docker compose down may remove network if not in use, but we
+# need to remove volume manually or pass it as docker compose down --volumes
 volumes:
+  # results in driver=local, name=server1_jenkins-cfg1 in docker volume ls
   jenkins-cfg1:
 
 networks:
+  # result in name=server1_jenkins-net1   driver=bridge    scope=local in docker network ls
   jenkins-net1:
