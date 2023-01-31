@@ -1,0 +1,64 @@
+#version: "3.9"
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    #stdin_open: true # docker run -i
+    #tty: true        # docker run -t
+    container_name: jenkins-server3
+    privileged: true
+    hostname: jenkinsserver3
+    user: root
+    labels:
+      com.yxar.description: "Jenkins-Server3"
+      com.yxar.label-with-empty-value: ""
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    networks:
+      jenkins-net3:
+        aliases:
+          - jenkins-net3
+    volumes:
+     - jenkins-cfg3:/var/jenkins_home
+     - /var/run/docker.sock:/var/run/docker.sock
+
+  postgres:
+    image: postgres:latest
+    networks:
+      jenkins-net3:
+        aliases:
+          - jenkins-net3
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonarpasswd
+    volumes:
+      - postgres-data3:/var/lib/postgresql/data
+  sonarqube:
+    image: sonarqube:lts
+    ports:
+      - "9000:9000"
+      - "9092:9092"
+    networks:
+      jenkins-net3:
+        aliases:
+          - jenkins-net3
+    environment:
+      SONARQUBE_JDBC_USERNAME: sonar
+      SONARQUBE_JDBC_PASSWORD: sonarpasswd
+      SONARQUBE_JDBC_URL: "jdbc:postgresql://postgres:5432/sonar"
+    depends_on:
+      - postgres
+volumes:
+  jenkins-cfg3:
+    # sudo ls /var/lib/docker/volumes/jenkins-cfg3/_data
+    driver: local
+    name: jenkins-cfg3
+  postgres-data3:
+    driver: local
+    name: postgres-data3
+
+networks:
+  jenkins-net3:
+    driver: bridge
+    name: jenkins-net3
