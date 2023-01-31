@@ -1,0 +1,32 @@
+#version: "3.9"
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins-server
+    privileged: true
+    hostname: jenkinsserver
+    user: root
+    labels:
+      com.yxar.description: "Jenkins-Server"
+      com.yxar.label-with-empty-value: ""
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    networks:
+      jenkins-net:
+        aliases:
+          - jenkins-net
+    volumes:
+     - jenkins-cfg:/var/jenkins_home
+     - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  jenkins-cfg:
+    # sudo ls /var/lib/docker/volumes/jenkins-cfg/_data
+    driver: local
+    name: jenkins-cfg
+
+networks:
+  jenkins-net:
+    driver: bridge
+    name: jenkins-net
