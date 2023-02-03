@@ -1,18 +1,56 @@
-# jenkins-server
+# Jenkins Server using Docker
 
-We can use docker to run jenkins server/controller in our machine, and jenkins
-[website](https://www.jenkins.io/doc/book/installing/docker/) has an example where it used  [docker:dind](https://hub.docker.com/layers/library/docker/dind/images/sha256-5c854de0db802a7922da1a271a969bd43c3c725cb6ea24953b217f3273aa1f2e?context=explore)
-which is the official Docker in Docker image from docker. we use dind when we need to build or run docker in our jenkins-server while jenkins-server itself is running inside a docker; but it seems there are some concerns, and some other options for this purpose see
-[this](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/).
-the above link refers to docker cli, and as reminder during docker installation on ubuntu we use the following command
-<br>
-`sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y`
-<br>
-where ce stands for Docker CE (Community Edition) vesrus Docker EE (Enterprise Edition);where based on [stackoverflow](https://stackoverflow.com/questions/58741267/containerd-io-vs-docker-ce-cli-vs-docker-ce-what-are-the-differences-and-what-d)
-- containerd.io : daemon containerd. it is required by the docker packages.
-- docker-ce-cli : command line interface for docker engine, community edition
-- docker-ce : docker engine, community edition. Requires docker-ce-cli.
+This readme contains steps to bring up Docker-version of Jenkins-server using docker-compose, and related commands organized in the [Makefile](./Makefile) of this repo. To simplify this readme, extra notes collected in [node.md](./note.md).<br>
+We assume the docker is properly running on the system.
 
-we may still need to install DOcker CLI inside our jenkins-docker;<br>
-Also, when we use docker to run jenkins server, if we do not preserve all initial settings, they will be gone after stopping the corresponding docker image, and to preserve them we have to use docker volume to keep thoes settings. see [docker-doc](https://docs.docker.com/storage/volumes/) for more info on volume, how to create in compose file, or create using docker cli, then use it in compose, or benefit of creating volume instea of using existing folder in our file system as volume; called [bind-mount](https://docs.docker.com/storage/bind-mounts/).<br>
-when we use docker-compose file, for bind-mount volume we need to be explicit and mention type as bind then source and target, or still we can use compact syntax as `source:targe`, and for named-volume we have to mentione them under volumes section in compose file, see more info [here](https://docs.docker.com/compose/compose-file/compose-file-v3/#volumes). Also some exmple at [compose.yml](./docker-compose/compose.yml)
+## bring up server
+`make server-up`<br>
+
+## access Jenkins web-UI
+`http://localhost:8080`<br>
+login or follow next section if this is first time, and server not initialize yet.
+
+### get server-init-password
+If this is the first time we bring up the server we need initial-pass to continue, and we can get it by following command<br>
+`make server-init-pass`<br>
+
+### initialize the server
+- install suggested plugins (we can choose other option, and then we can select All,None, suggested, or ...)
+- create first admin user, I set everything as admin and added my email (we may need user during ssh access to cli, so better to use simple name)
+- leave Jenkins URL as it is
+- save and finish, start using Jenkins
+
+## access Jenkins CLI
+obviously we need access to server-terminal to run some command-line operation using Jenkins CLI tool, one easy way to use docker to get access to bash as follow
+### access server bash
+`make server-bash`<br>
+now we can continue prepration for using Jenkins CLI tool, by creating a zdata folder in jenkins-home folder which is persistant by using docker-volume. and generate ssh-key without passphrase to set it up for admin user
+```console
+root@jenkinsserver:/var/jenkins_home# mkdir zdata
+root@jenkinsserver:/var/jenkins_home# cd zdata
+root@jenkinsserver:/var/jenkins_home/zdata# ssh-keygen -t rsa -f admin-rsa
+root@jenkinsserver:/var/jenkins_home/zdata# ls
+admin-rsa  admin-rsa.pub
+root@jenkinsserver:/var/jenkins_home/zdata# cat admin-rsa.pub
+```
+- http://localhost:8080/manage/configureSecurity/ select Random for SSH-server-port apply/save
+- ssh-keygen -t rsa, location: /home/max/.ssh/jenkins_rsa, no pass-phrase
+- copy the result of cat admin-rsa.pub in above snippet, and paste the content to SSH in http://localhost:8080/user/admin/configure then apply/save
+- go to http://localhost:8080/cli/, and copy the link for `jenkins-cli.jar` download
+- go back to server-terminal and download it as follow
+```console
+root@jenkinsserver:/var/jenkins_home/zdata#
+root@jenkinsserver:/var/jenkins_home/zdata# curl http://localhost:8080/jnlpJars/jenkins-cli.jar --output jenkins-cli.jar
+root@jenkinsserver:/var/jenkins_home/zdata# ls
+admin-rsa  admin-rsa.pub  jenkins-cli.jar
+root@jenkinsserver:/var/jenkins_home/zdata#
+```
+- `java -jar jenkins-cli.jar -s http://localhost:8080/ -ssh -user admin -i admin-rsa help`
+- if we see issue (WARNING) with /root/.ssh/known_hosts and ...; we can just create a dummy rsa or (`ssh-keygen -t rsa` then few **enters** to accepet all default); unfortunatly this will not part of our docker-volume, unless we add another mapping if it worth it, and we may run this fix once if server go down and come back. Also we may create shell script to simplify the long commands for cli-access; Anyway, for now we leave it as it is. even custom location of rsa-file cannot help us see [this](https://stackoverflow.com/questions/84096/setting-the-default-ssh-key-location)
+
+
+
+
+
+
+
