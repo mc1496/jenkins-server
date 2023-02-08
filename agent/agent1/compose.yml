@@ -1,0 +1,44 @@
+#version: "3.9"
+services:
+  jenkins:
+    image: jenkins/ssh-agent:alpine
+    container_name: jenkins-agent1
+    privileged: true
+    hostname: jenkinsagent1
+    user: root
+    labels:
+      com.yxar.description: "Jenkins-Agent1"
+      com.yxar.label-with-empty-value: ""
+    # ports:
+    #   - "4444:22"
+    #   - "50000:50000"
+    #just expose for internal jenkins network usage, no need for host
+    # also if we need to map to host port using above section ports, we may need
+    # different port on host , because 22 is already used by host-system ssh-server
+    # may be 4444:22
+    expose:
+      - 22
+    environment:
+      - JENKINS_AGENT_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDJ+S5dJjgMglrUWXA8peEgJH+JC0sJLhZNLrOWqQFu0IT7hibeaGKILJeDoFK7rM2m1nW30VQhePApsHIz59fBhbyCSx//A4kkJn1wKS+xOCXtYPTTqsoYRQq0r4/CPuF1bc6Y7FGjWrNYAGmYHdK6MfTzm2IXGWTHPt3MfLS2j+a51hOw/MoUPTwICFO5lTB02WzN1MHLOHbJGti7imHcynZGrqbwn1eOv4HJn7o4taGGKAcm9MCZ+vDa9DboC8TmtSieepCZgsr4H5VkQ8ISSm0oz6/xvUFaXX9yCtuxGvFLvA+zVbZF8EYYLx9UGDlCnsIBdxTWj786n7clMB3FVc9yPu7F6PB86+cpv6f5uxGwh25MNniIzVt/4hERCoZyWUO3NtHB/fnLr5Di+QQpdHWQDSuVukgGz7FSk45UdS9n7TvwUA5svVy1FgqslyX6GIs5vr9rB0g6JVoTbqKseKmi3htaMF/fEr5WWeh75+Oc6UJepe/pQPpVLzFOOrU= max@m20
+    networks:
+      jenkins-net:
+        aliases:
+          - jenkins-net
+    # volumes:
+    #  - jenkins-cfg:/var/jenkins_home
+    #  - /var/run/docker.sock:/var/run/docker.sock
+
+    # without the following restart policy when we restart jenkins, docker-compose stay down
+    #restart: on-failure
+
+# volumes:
+#   jenkins-cfg:
+#     # sudo ls /var/lib/docker/volumes/jenkins-cfg/_data
+#     driver: local
+#     name: jenkins-cfg
+
+networks:
+  jenkins-net:
+    driver: bridge
+    name: jenkins-net
+    external: true  #because agent join existing network of controller

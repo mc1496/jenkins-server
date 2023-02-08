@@ -48,9 +48,49 @@ root@jenkinsserver:/var/jenkins_home/zdata#
 - `java -jar jenkins-cli.jar -s http://localhost:8080/ -ssh -user admin -i admin-rsa help`
 - if we see issue (WARNING) with /root/.ssh/known_hosts and ...; we can just create a dummy rsa or (`ssh-keygen -t rsa` then few **enters** to accepet all default); unfortunatly this will not part of our docker-volume, unless we add another mapping if it worth it, and we may run this fix once if server go down and come back. Also we may create shell script to simplify the long commands for cli-access; Anyway, for now we leave it as it is. even custom location of rsa-file cannot help us see [this](https://stackoverflow.com/questions/84096/setting-the-default-ssh-key-location)
 
-
-
-
-
-
-
+# Jenkins SSH-Agent Using Docker
+I installed Docker pipeline plugin to use docker image later (not sure if it was necessary on top of installing all suggested pluging)<br>
+I created rsa public/private key called `jrsa` without any passphrase under temp folder<br>
+`ssh-keygen -t rsa -f jrsa`<br>
+The content of private key `jrsa` will be used in Controller, and the content of `jrsa.pub` added to Dockerfile-[compose-file](./agent/agent1/compose.yml) for environment variable `JENKINS_AGENT_SSH_PUBKEY`<br>
+please note that the docker-image `jenkins/ssh-agent:alpine`, has a user called `jenkins` with home at `/home/jenkins` and we have a working directory for agent in `/home/jenkins/agent`, and the hostname will be what we set in docker-compose file as `jenkinsagent1`, also this image has `ssh-server` running and listening on default port `22`; (we can get all this information before creating compose file see [note.md](./note.md) file)<br>
+we can bring up or down the agent using
+- `make agent-up`
+- `make agent-down`
+<br>
+to test
+- manage jenkins, manage Nodes and Clouds, new node agent1, type permanent Agent, create
+- remote root directory= /home/jenkins
+- labels= agent1
+- new-item, run-in-agent1, freestyle
+- general, restrict where this project run
+- launch method= Launc agents via SSH
+- Host = jenkinsagent1
+ - credintials-add - jenkins
+ - kind = SSH username with private key
+ - username = jenkins
+ -private enter directly-add , paste jrsa content,  save
+ - Host Key Verification Strategy= Manually trusted key verification strategy, save
+ <br>
+ - http://localhost:8080/manage/computer/(built-in)/configure set Number of executor from default 2 to 0
+ <br>
+- new item, run-in-agent1, freestyle
+- general: restrict where this project can be run, label expression=agent1
+- build step=shell executor, echo $NODE_NAME
+- apply, save and build
+- check console output
+<br>
+```console
+Started by user admin
+Running as SYSTEM
+Building remotely on agent1 in workspace /home/jenkins/workspace/run-in-agent1
+[run-in-agent1] $ /bin/sh -xe /tmp/jenkins13018415910130766617.sh
++ echo agent1
+agent1
+Finished: SUCCESS
+```
+<br>
+see [this](https://github.com/jenkinsci/configuration-as-code-plugin/blob/master/README.md), we may use [JCasC](https://www.jenkins.io/projects/jcasc/#configure-all-jenkins-initial-setup), to configure the credintials, and nodes.
+<br>
+we can create a custom ssh-agent (not using the jenkins/ssh-agent), but we may need to do more setting see [this](https://github.com/mc1496/jenkins2-jenkins-course/blob/master/jenkins-slave/Dockerfile)
+<br>

@@ -3,6 +3,9 @@
 export SERVER_COMPOSE_FILE=./controller/compose.yml
 export INIT_PASS_FILE=/var/jenkins_home/secrets/initialAdminPassword
 
+export AGENT_COMPOSE_FILE=./agent/agent1/compose.yml
+
+
 server-up:
 	docker compose -f $${SERVER_COMPOSE_FILE} up -d
 	echo "http://localhost:8080"
@@ -26,6 +29,15 @@ server-list-info:
 	#docker container ls | grep -oh jenkins-server || true
 	docker network ls | grep -oh jenkins-net || true
 	docker volume ls | grep -oh jenkins-cfg || true
+
+agent-up:
+	docker compose -f $${AGENT_COMPOSE_FILE} up -d
+
+agent-down:
+	docker compose -f $${AGENT_COMPOSE_FILE} down
+
+agent-bash:
+	docker exec -it jenkins-agent1 /bin/bash
 
 ######################################################################
 # to see the commands of a targetrun make target V=s (Verbose=Set)
