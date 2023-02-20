@@ -20,8 +20,16 @@ when we use docker-compose file, for bind-mount volume we need to be explicit an
 ## Jenkins Agents
 It seems (*as I understand*) we can have two types of Agents:
 - SSH Agent: Controller connect to Agent via SSH, and may start the agent, and even install JVM on it
-- [JNLP](https://docs.oracle.com/javase/tutorial/deployment/deploymentInDepth/jnlp.html) Agent: This is a situation that controller cannot start remote agent, and we have to run it manually or some other way, then agent connect to controller; seems JNLP or webstart is kind od deprecated see [this](https://en.wikipedia.org/wiki/Java_Web_Start#Deprecation)<br>
-but it seems we have docker image for that `docker pull jenkins/jnlp-slave:latest` also see [this](https://hub.docker.com/r/jenkins/jnlp-slave/tags)
+- [JNLP](https://docs.oracle.com/javase/tutorial/deployment/deploymentInDepth/jnlp.html) Agent: This is a situation that controller cannot start remote agent, and we have to run it manually or some other way, then agent connect to controller;
+
+### Note on JNLP
+seems JNLP or webstart is kind od deprecated see [this](https://en.wikipedia.org/wiki/Java_Web_Start#Deprecation)<br>
+but it seems we have docker image for that `docker pull jenkins/jnlp-slave:latest` also see [this](https://hub.docker.com/r/jenkins/jnlp-slave/tags)<br>
+a good example for JNLP is [here](https://www.youtube.com/watch?v=62iKhvVl08Y)
+<br>
+also see [jemkins-remoting](https://www.jenkins.io/projects/remoting/)
+
+
 
 ### SSH Agent
 let see some info on `jenkins/ssh-agent:alpine` docker image
