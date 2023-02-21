@@ -94,3 +94,9 @@ see [this](https://github.com/jenkinsci/configuration-as-code-plugin/blob/master
 <br>
 we can create a custom ssh-agent (not using the jenkins/ssh-agent), but we may need to do more setting see [this](https://github.com/mc1496/jenkins2-jenkins-course/blob/master/jenkins-slave/Dockerfile)
 <br>
+
+ACtually we can use docker-agent-label in pipeline and it'w working, but if we try to use docker syntax for agent
+we will get
+Invalid agent type "docker" specified. Must be one of [any, label, none] @ line 3, column 5.
+       docker {
+In that case we have to installe two plugins: Docker and Docker-pipeline
