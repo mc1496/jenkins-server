@@ -100,3 +100,8 @@ we will get
 Invalid agent type "docker" specified. Must be one of [any, label, none] @ line 3, column 5.
        docker {
 In that case we have to installe two plugins: Docker and Docker-pipeline
+
+just found this after doing all thing from here and ther
+https://github.com/jenkinsci/docker/blob/master/README.md
+
+need to be study
